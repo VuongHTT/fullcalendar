@@ -23,8 +23,6 @@ function CoordinateGrid(buildFunc) {
         if ($(".fc-grid")[0]) {
             scrollTopOffset = $(".fc-grid").scrollTop();
             scrollLeftOffset = $(".fc-grid").scrollLeft();
-            console.log("scrollTopOffset=" + scrollTopOffset);
-            console.log("scrollLeftOffset=" + scrollLeftOffset);
         }
 
 		for (i=0; i<rowCnt; i++) {
