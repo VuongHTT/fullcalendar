@@ -102,11 +102,12 @@ html .fc,
 	
 .fc-content {
 	clear: both;
+    overflow-x: auto;
 	}
 	
 .fc-view {
 	width: 100%; /* needed for view switching (when view is absolute) */
-	overflow: hidden;
+	/*overflow: hidden; support scrolling */
 	}
 	
 	
