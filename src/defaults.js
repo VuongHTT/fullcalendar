@@ -89,7 +89,10 @@ var defaults = {
 	
 	// ResourceNextWeeks week count
 	numberOfWeeks: 4,
-	weekPrefix: 'Week'
+	weekPrefix: 'Week',
+
+    // Minimum column width
+    minimumColumnWidth: 75
 	
 };
 

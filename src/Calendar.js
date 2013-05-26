@@ -90,12 +90,19 @@ function Calendar(element, options, eventSources, resourceSources) {
 		if (options.theme) {
 			element.addClass('ui-widget');
 		}
-		content = $("<div class='fc-content' style='position:relative'/>")
-			.prependTo(element);
+        element.css('position', 'relative');
+        var headerContainer = $("<div style='position: absolute; top: 0; left: 0; right: 0; height: 35px;' />"); // TODO cater for optional header & headerHeight
+        headerContainer.prependTo(element);
+        var contentContainer = $("<div style='position: absolute; top: 35px; left: 0; right: 0; bottom: 0;' />")
+        contentContainer.prependTo(element);
+
+		content = $("<div class='fc-content' style='position:relative; height: 100%;'/>");
+        content.prependTo(contentContainer);
+
 		header = new Header(t, options);
 		headerElement = header.render();
 		if (headerElement) {
-			element.prepend(headerElement);
+            headerContainer.prepend(headerElement);
 		}
 		changeView(options.defaultView);
 		$(window).resize(windowResize);
@@ -166,7 +173,7 @@ function Calendar(element, options, eventSources, resourceSources) {
 			}else{
 				currentView = viewInstances[newViewName] = new fcViews[newViewName](
 					newViewElement = absoluteViewElement =
-						$("<div class='fc-view fc-view-" + newViewName + "' style='position:absolute'/>")
+						$("<div class='fc-view fc-view-" + newViewName + "' style='position:absolute; height: 100%;'/>")
 							.appendTo(content),
 					t // the calendar object
 				);
@@ -346,7 +353,7 @@ function Calendar(element, options, eventSources, resourceSources) {
 		// create current view again
 		currentView = viewInstances[currentView.name] = new fcViews[currentView.name](
 					absoluteViewElement =
-						$("<div class='fc-view fc-view-" + currentView.name + "' style='position:absolute'/>")
+						$("<div class='fc-view fc-view-" + currentView.name + "' style='position:absolute; height: 100%;'/>")
 							.appendTo(content),
 					t // the calendar object
 				);

@@ -1,9 +1,10 @@
 
-function ResourceEventRenderer() {
+function ResourceEventRenderer(syncResourceRowHeights,getDragContainment) {
 	var t = this;
 	
 	
 	// exports
+    t.syncResourceRowHeights = syncResourceRowHeights;
 	t.renderEvents = renderEvents;
 	t.compileDaySegs = compileSegs; // for DayEventRenderer
 	t.clearEvents = clearEvents;
@@ -38,6 +39,8 @@ function ResourceEventRenderer() {
 	var renderTempDaySegs = t.renderTempDaySegs;
 	var compileDaySegs = t.compileDaySegs;
 	var eventResize = t.eventResize;
+    var getRowDivs = t.getRowDivs;
+    var getDragContainment = getDragContainment;
 	
 	
 	
@@ -48,6 +51,9 @@ function ResourceEventRenderer() {
 	function renderEvents(events, modifiedEventId) {
 		reportEvents(events);
 		renderDaySegs(compileSegs(events), modifiedEventId);
+        if (syncResourceRowHeights) {
+            syncResourceRowHeights(getRowDivs());
+        }
 	}
 	
 	
@@ -155,6 +161,8 @@ function ResourceEventRenderer() {
 			disabled: denyEventDragging,
 			opacity: opt('dragOpacity'),
 			revertDuration: opt('dragRevertDuration'),
+            scroll: 'false',
+            containment: getDragContainment(),
 			start: function(ev, ui) {
 				trigger('eventDragStart', eventElement, event, ev, ui);
 				hideEvents(event, eventElement);

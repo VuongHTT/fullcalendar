@@ -36,23 +36,34 @@ function ResourceView(element, calendar, viewName) {
 	t.getColWidth = function() { return colWidth };
 	t.getViewName = function() { return viewName };
 	t.getDaySegmentContainer = function() { return daySegmentContainer };
-	
-	
+
+
 	// imports
 	View.call(t, element, calendar, viewName);
 	OverlayManager.call(t);
 	SelectionManager.call(t);
-	ResourceEventRenderer.call(t);
+	ResourceEventRenderer.call(t, syncResourceRowHeights, function() { return contentDiv; });
 	var opt = t.opt;
 	var trigger = t.trigger;
 	var clearEvents = t.clearEvents;
 	var renderOverlay = t.renderOverlay;
 	var clearOverlays = t.clearOverlays;
 	var formatDate = calendar.formatDate;
-	
+    var getRowDivs = t.getRowDivs;
+    var minimumColWidth = opt('minimumColumnWidth');
+
 	// locals
 	var head;
 	var headCells;
+    var headerDiv;
+    var headerTable;
+    var headerTableBody;
+    var headerTableCells;
+    var resourcesDiv;
+    var resourcesTable;
+    var resourceRows;
+    var ensureBorderDiv;
+    var contentDiv;
 	var body;
 	var bodyRows;
 	var bodyCells;
@@ -74,8 +85,8 @@ function ResourceView(element, calendar, viewName) {
 	var nwe;
 	var tm;
 	var colFormat;
-	
-	
+
+
 	
 	/* Rendering
 	------------------------------------------------------------*/
@@ -124,10 +135,10 @@ function ResourceView(element, calendar, viewName) {
 		var i, j, id, resourceName;
 		var table;
 		var resources = t.getResources;
+
 		s =
-			"<table class='fc-border-separate' style='width:100%' cellspacing='0'>" +
-			"<thead>" +
-			"<tr class='fc-first fc-last'><th class='fc-resourceName'>&nbsp;</th>";
+			"<table class='fc-border-separate fc-content-table' cellspacing='0'>" +
+			"<thead>";
 		for (i=0; i<colCnt; i++) {
 			s +=
 				"<th class='fc- " + headerClass + "'/>";
@@ -141,7 +152,7 @@ function ResourceView(element, calendar, viewName) {
 			resourceName = resources[i]['name'];
 			
 			s +=
-				"<tr class='fc-resourcerow-" + id + "'><td class='fc-resourceName'>" + resourceName + "</td>";
+				"<tr class='fc-resourcerow-" + id + "'>";
 			for (j=0; j<colCnt; j++) {
 				s +=
 					"<td class='fc- " + contentClass + " fc-day" + j + " fc-resource" + id +"'>" + // need fc- for setDayID
@@ -162,10 +173,43 @@ function ResourceView(element, calendar, viewName) {
 		s +=
 			"</tbody>" +
 			"</table>";
-		table = element.html($(s));
+
+        var mainSkeleton =
+            "<div style='position: relative; height: 100%;'>" +
+                "<div class='fc-ensure-border-div' />" +
+                "<div class='fc-resource-header-div'>" +
+                    buildHeaderTableSkeleton(headerClass) +
+                "</div>" +
+                "<div class='fc-resource-resources-div'>" +
+                    "<div>" +
+                        buildResourcesTableSkeleton(resources, maxRowCnt) +
+                    "</div>" +
+                    "<div style='height: 20px'>&nbsp;</div>" + // dummy for scrolling
+                "</div>" +
+                "<div class='fc-resource-content-div'>" +
+                    // content
+                    s +
+                "</div>" +
+            "</div>";
+
+        element.html($(mainSkeleton));
+
+		table = element.find('table.fc-content-table');
 		
 		head = table.find('thead');
 		headCells = head.find('th:not(th.fc-resourceName)');
+
+        headerDiv = element.find('div.fc-resource-header-div');
+        headerTable = element.find('table.fc-header-table');
+        headerTableBody = headerTable.find('thead');
+        headerTableCells = headerTableBody.find('th');
+
+        resourcesDiv = element.find('div.fc-resource-resources-div');
+        resourcesTable = resourcesDiv.find('table.fc-resources-column');
+        resourceRows = resourcesDiv.find('table tbody tr td div');
+
+        ensureBorderDiv = element.find('div.fc-ensure-border-div');
+
 		body = table.find('tbody');
 		bodyRows = body.find('tr');
 		bodyCells = body.find('td:not(td.fc-resourceName)');
@@ -173,9 +217,9 @@ function ResourceView(element, calendar, viewName) {
 		bodyCellTopInners = bodyRows.eq(0).find('div.fc-day-content div');
 		
 		// trigger resourceRender callback now when the skeleton is ready
-		body.find('td.fc-resourceName').each(function(resourceElement) {
-			trigger('resourceRender', resources[i], resources[i], resourceElement);
-		});
+        element.find('div.fc-resource-resources-div').find('td.fc-resourceName div').each(function(resourceElement) {
+            trigger('resourceRender', resources[i], resources[i], resourceElement);
+        });
 
 		// marks first+last th's
 		headCells
@@ -185,7 +229,21 @@ function ResourceView(element, calendar, viewName) {
 			.end()
 			.filter(':last')
 			.addClass('fc-last');
-		
+        headerTableCells
+            .removeClass('fc-first fc-last')
+            .filter(':first')
+            .addClass('fc-first')
+            .end()
+            .prev()
+            .filter(':last')
+            .addClass('fc-last');
+        element.find('.fc-resources-column tbody tr')
+            .filter(':first')
+            .addClass('fc-first')
+            .end()
+            .filter(':last')
+            .addClass('fc-last');
+
 		// marks first+last td's from each row
 		bodyCells.removeClass('fc-first fc-last');
 		bodyRows.each(function() {
@@ -198,11 +256,53 @@ function ResourceView(element, calendar, viewName) {
 		
 		daySegmentContainer =
 			$("<div style='position:absolute;z-index:8;top:0;left:0'/>")
-				.appendTo(element);
+				.appendTo(element.find(".fc-resource-content-div"));
+
+        // synchronize scrolling
+        contentDiv = element.find('div.fc-resource-content-div');
+        contentDiv.on('scroll', function() {
+            headerDiv.scrollLeft($(this).scrollLeft());
+            resourcesDiv.scrollTop($(this).scrollTop());
+            colContentPositions.clear();
+        });
 	}
-	
-	
-	
+
+    function buildHeaderTableSkeleton(headerClass) {
+        var s =
+            "<table class='fc-border-separate fc-header-table' cellspacing='0'>" +
+            "<thead>" +
+                "<tr class='fc-first fc-last'>";
+        for (i=0; i<colCnt; i++) {
+            s += "<th class='fc- " + headerClass + "'/>";
+        }
+        s +=
+                  "<th style='width: 100px'>&nbsp;</td>" + // dummy cell for scrolling
+                "</tr>" +
+            "</thead>" +
+            "</table>";
+        return s;
+    }
+
+    function buildResourcesTableSkeleton(resources, maxRowCnt) {
+        var s =
+            "<table class='fc-border-separate fc-resources-column' cellspacing='0'>" +
+                "<tbody>";
+        for (i=0; i<maxRowCnt; i++) {
+            id = resources[i]['id'];
+            resourceName = resources[i]['name'];
+            s +=
+                "<tr>" +
+                    "<td class='fc-widget-content fc-first fc-last'><div class='fc-resourceName'>" + resourceName + "</div></td>" +
+                "</tr>";
+
+        }
+        s +=
+                "</tbody>" +
+                "</table>";
+        return s;
+    }
+
+
 	function updateCells(firstTime) {
 		var month = t.start.getMonth();
 		var today = clearTime(new Date());
@@ -212,21 +312,31 @@ function ResourceView(element, calendar, viewName) {
 		var weekendTester;
 		var indexCorrecter=0;
 		var weekends = opt('weekends');
-		headCells.each(function(i, _cell) {
+		headCells.each(function(i, _cell) { // TODO remove hidden headCell of content table completely?
 			cell = $(_cell);
 			date = indexDate(i);
-
-			cell.html(formatDate(date, colFormat));
 			if (date.getDay() == 0 || date.getDay() == 6) cell.addClass('fc-weekend');
-			
-			if (date.getDay() == 1 && viewName == "resourceNextWeeks") cell.html(cell.html()+'<br>'+opt('weekPrefix')+' '+iso8601Week(date));
 
 			// setDayID does not work at all for resourceviews because there can be same id twice. Set date as timestamp works better
 			cell.each(function(i, _cell) {
 				_cell.className = _cell.className.replace(/^fc-\w*/, 'fc-id' + date.getTime());
 			});
 		});
-		
+        headerTableCells.slice(0, -1).each(function(i, _cell) {
+            cell = $(_cell);
+            date = indexDate(i);
+
+            cell.html(formatDate(date, colFormat));
+            if (date.getDay() == 0 || date.getDay() == 6) cell.addClass('fc-weekend');
+
+            if (date.getDay() == 1 && viewName == "resourceNextWeeks") cell.html(cell.html()+'<br>'+opt('weekPrefix')+' '+iso8601Week(date));
+
+            // setDayID does not work at all for resourceviews because there can be same id twice. Set date as timestamp works better
+            cell.each(function(i, _cell) {
+                _cell.className = _cell.className.replace(/^fc-\w*/, 'fc-id' + date.getTime());
+            });
+        });
+
 		indexCorrecter=0;
 		bodyCells.each(function(i, _cell) {
 			cell = $(_cell);		
@@ -260,45 +370,61 @@ function ResourceView(element, calendar, viewName) {
 				row.hide();
 			}
 		});
+
+        syncDivs();
 	}
-	
-	
+
+
+    function syncResourceRowHeights(rowDivs) {
+        var cnt = rowDivs.length;
+        for (var i=0; i < cnt; i++) {
+            $(resourceRows[i]).height(rowDivs[i].height());
+        }
+    }
+
+    function syncDivs() {
+        // Adjust positioning of div header and content div based on height headers
+        var headerHeight = headerTable.outerHeight();
+        headerDiv.css('height', headerHeight);
+        contentDiv.css('top', headerHeight - 1); // -1 ensures bottom border is always visible
+        resourcesDiv.css('top', headerHeight - 1);
+        ensureBorderDiv.css('height', headerHeight - 1);
+
+        var resourcesWidth = resourcesTable.outerWidth();
+        headerDiv.css('left', resourcesWidth - 1);
+        contentDiv.css('left', resourcesWidth - 1);
+        resourcesDiv.css('width', resourcesWidth);
+        ensureBorderDiv.css('width', resourcesWidth - 1);
+    }
+
 	
 	function setHeight(height) {
 		viewHeight = height;
-		
-		var bodyHeight = viewHeight - head.height();
-		var rowHeight;
-		var rowHeightLast;
-		var cell;
-			
-		if (opt('weekMode') == 'variable') {
-			rowHeight = rowHeightLast = Math.floor(bodyHeight / (rowCnt==1 ? 2 : 6));
-		}else{
-			rowHeight = Math.floor(bodyHeight / rowCnt);
-			rowHeightLast = bodyHeight - rowHeight * (rowCnt-1);
-		}
-		
 		bodyFirstCells.each(function(i, _cell) {
 			if (i < rowCnt) {
 				cell = $(_cell);
-				setMinHeight(
-					cell.find('> div'),
-					(i==rowCnt-1 ? rowHeightLast : rowHeight) - vsides(cell)
-				);
+                setMinHeight(cell.find('> div'), 17);
 			}
 		});
-		
 	}
 	
 	
 	function setWidth(width) {
-		viewWidth = width;
-		// minus resourceName width
-		viewWidth -= $('th.fc-resourceName').css('width').replace('px','');
+        viewWidth = parseInt(element.find('div.fc-resource-content-div').css('width').replace('px',''));
+
 		colContentPositions.clear();
 		colWidth = Math.floor(viewWidth / colCnt);
-		setOuterWidth(headCells.slice(0, -1), colWidth);
+        if (colWidth < minimumColWidth) {
+            colWidth = minimumColWidth;
+        }
+        viewWidth = colWidth * colCnt;
+
+        element.find('table.fc-content-table').width(viewWidth);
+		setOuterWidth(headCells, colWidth);
+
+        headerTable.width(viewWidth + 101); // allow for dummy column
+        setOuterWidth(headerTableCells.slice(0, -1), colWidth); // set width of all header columns except last dummy column
+        syncDivs();
 	}
 	
 	
@@ -466,9 +592,11 @@ function ResourceView(element, calendar, viewName) {
 	
 	coordinateGrid = new CoordinateGrid(function(rows, cols) {
 		var e, n, p;
+        var scrollTop = contentDiv.scrollTop();
+        var scrollLeft = contentDiv.scrollLeft();
 		headCells.each(function(i, _e) {
 			e = $(_e);
-			n = e.offset().left;
+			n = e.offset().left + scrollLeft;
 			if (i) {
 				p[1] = n;
 			}
@@ -479,7 +607,7 @@ function ResourceView(element, calendar, viewName) {
 		bodyRows.each(function(i, _e) {
 			if (i < rowCnt) {
 				e = $(_e);
-				n = e.offset().top;
+				n = e.offset().top + scrollTop;
 				if (i) {
 					p[1] = n;
 				}
@@ -489,7 +617,9 @@ function ResourceView(element, calendar, viewName) {
 		});
 
 		p[1] = n + e.outerHeight();
-	});
+	}, function() {
+        return contentDiv;
+    });
 	
 	
 	hoverListener = new HoverListener(coordinateGrid);
@@ -497,16 +627,18 @@ function ResourceView(element, calendar, viewName) {
 	
 	colContentPositions = new HorizontalPositionCache(function(col) {
 		return bodyCellTopInners.eq(col);
-	});
-	
+	}, function() {
+        return contentDiv;
+    });
+
 	
 	function colContentLeft(col) {
-		return colContentPositions.left(col);
+		return colContentPositions.left(col); // + contentDiv.scrollLeft();
 	}
 	
 	
 	function colContentRight(col) {
-		return colContentPositions.right(col);
+		return colContentPositions.right(col); // + contentDiv.scrollLeft();
 	}
 	
 	
@@ -538,7 +670,7 @@ function ResourceView(element, calendar, viewName) {
 					col = i-1;
 					break;
 				}
-			};
+			}
 			
 			if (typeof col == 'undefined') {
 				// date is in next weekview, select last column
@@ -632,10 +764,14 @@ function ResourceView(element, calendar, viewName) {
 	
 	
 	function allDayBounds(i) {
-		var resourceNameColWidth = parseInt($(head).find('th.fc-resourceName').css('width').replace('px',''));
+//		var resourceNameColWidth = parseInt($(head).find('th.fc-resourceName').css('width').replace('px',''));
+//		return {
+//			left: resourceNameColWidth,
+//			right: (viewWidth+resourceNameColWidth)
+//		};
 		return {
-			left: resourceNameColWidth,
-			right: (viewWidth+resourceNameColWidth)
+			left: 0,
+			right: viewWidth
 		};
 	}
 	

@@ -7,7 +7,7 @@ function DayEventRenderer() {
 	t.renderDaySegs = renderDaySegs;
 	t.renderTempDaySegs = renderTempDaySegs;
 	t.resizableDayEvent = resizableDayEvent;
-	
+    t.getRowDivs = getRowDivs;
 	
 	// imports
 	var opt = t.opt;
@@ -37,8 +37,7 @@ function DayEventRenderer() {
 	var clearOverlays = t.clearOverlays;
 	var clearSelection = t.clearSelection;
 	var getViewName = t.getViewName;
-	
-	
+
 	
 	/* Rendering
 	-----------------------------------------------------------------------------*/

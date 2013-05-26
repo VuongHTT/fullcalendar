@@ -1,6 +1,6 @@
 {
-  "name": "fullcalendar-resourceviews",
-  "version": "1.6.1.1",
+  "name": "fullcalendar-resourceviews-scrollable",
+  "version": "1.6.1.1-tbuckel",
   "dependencies": {
     "jquery": "~1.9.1"
   },
@@ -8,15 +8,15 @@
     "jquery-ui": "~1.10.2"
   },
 
-  "title": "FullCalendar-Resourceviews",
+  "title": "FullCalendar-Resourceviews (scrollable)",
   "description": "Full-sized drag & drop event calendar with Resource Views",
   "keywords": [ "calendar", "event", "full-sized", "Resources" ],
 
-  "homepage": "http://arshaw.com/fullcalendar/, http://tux.fi/~jarnok/fullcalendar-resourceviews",
-  "demo": "http://arshaw.com/fullcalendar/, http://tux.fi/~jarnok/fullcalendar-resourceviews",
-  "docs": "http://arshaw.com/fullcalendar/docs/, http://tux.fi/~jarnok/fullcalendar-resourceviews",
-  "download": "http://arshaw.com/fullcalendar/download/, http://tux.fi/~jarnok/fullcalendar-resourceviews",
-  "bugs": "http://code.google.com/p/fullcalendar/issues/list, http://www.github.com/jarnokurlin/fullcalendar",
+  "homepage": "http://arshaw.com/fullcalendar/, http://tux.fi/~jarnok/fullcalendar-resourceviews, https://github.com/tbuckel/fullcalendar",
+  "demo": "http://arshaw.com/fullcalendar/, http://tux.fi/~jarnok/fullcalendar-resourceviews, https://github.com/tbuckel/fullcalendar",
+  "docs": "http://arshaw.com/fullcalendar/docs/, http://tux.fi/~jarnok/fullcalendar-resourceviews, https://github.com/tbuckel/fullcalendar",
+  "download": "http://arshaw.com/fullcalendar/download/, http://tux.fi/~jarnok/fullcalendar-resourceviews, https://github.com/tbuckel/fullcalendar",
+  "bugs": "http://code.google.com/p/fullcalendar/issues/list, http://www.github.com/jarnokurlin/fullcalendar, https://github.com/tbuckel/fullcalendar",
 
   "licenses": [
     {
@@ -26,9 +26,9 @@
   ],
 
   "author": {
-    "name": "Jarno Kurlin",
-    "email": "jarno@kirottu.net",
+    "name": "Thomas Buckel",
+    "email": "thomas.buckel@gmail.com",
     "url": ""
   },
-  "copyright": "2013 Adam Shaw, 2013 Jarno Kurlin (Resource Views)"
+  "copyright": "2013 Adam Shaw, 2013 Jarno Kurlin (Resource Views), 2013 Thomas Buckel (Resource Views scrolling)"
 }

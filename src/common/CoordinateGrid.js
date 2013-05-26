@@ -1,10 +1,11 @@
 
-function CoordinateGrid(buildFunc) {
+function CoordinateGrid(buildFunc, scrollableElementFunc) {
 
 	var t = this;
 	var rows;
 	var cols;
-	
+	var scrollableElementFunc = scrollableElementFunc;
+
 	
 	t.build = function() {
 		rows = [];
@@ -20,9 +21,9 @@ function CoordinateGrid(buildFunc) {
 
         var scrollTopOffset = 0;
         var scrollLeftOffset = 0;
-        if ($(".fc-grid")[0]) {
-            scrollTopOffset = $(".fc-grid").scrollTop();
-            scrollLeftOffset = $(".fc-grid").scrollLeft();
+        if (scrollableElementFunc) {
+            scrollTopOffset = scrollableElementFunc().scrollTop();
+            scrollLeftOffset = scrollableElementFunc().scrollLeft();
         }
 
 		for (i=0; i<rowCnt; i++) {
@@ -43,9 +44,15 @@ function CoordinateGrid(buildFunc) {
 	
 	t.rect = function(row0, col0, row1, col1, originElement) { // row1,col1 is inclusive
 		var origin = originElement.offset();
+        var scrollTopOffset = 0;
+        var scrollLeftOffset = 0;
+        if (scrollableElementFunc) {
+            scrollTopOffset = scrollableElementFunc().scrollTop();
+            scrollLeftOffset = scrollableElementFunc().scrollLeft();
+        }
 		return {
-			top: rows[row0][0] - origin.top,
-			left: cols[col0][0] - origin.left,
+			top: rows[row0][0] - scrollTopOffset - origin.top,
+			left: cols[col0][0] - scrollLeftOffset - origin.left,
 			width: cols[col1][1] - cols[col0][0],
 			height: rows[row1][1] - rows[row0][0]
 		};

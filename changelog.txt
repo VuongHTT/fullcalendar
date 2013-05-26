@@ -1,3 +1,6 @@
+version 1.6.1.1-scrollable
+    - Support full horizontal and vertical scrolling
+
 version 1.6.1.1 (5/11/13)
 	- Merged with latest Fullcalendar version 1.6.1
 	- Fixed issue #29 Resize does not work when event is 1 day and weekends off
