@@ -93,5 +93,6 @@
     padding-bottom: 1px;
     padding-left: 2px;
     min-height: 16px;
+    white-space: nowrap;
     }
 

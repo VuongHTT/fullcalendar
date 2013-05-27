@@ -378,7 +378,12 @@ function ResourceView(element, calendar, viewName) {
     function syncResourceRowHeights(rowDivs) {
         var cnt = rowDivs.length;
         for (var i=0; i < cnt; i++) {
-            $(resourceRows[i]).height(rowDivs[i].height());
+            var height = rowDivs[i].height();
+            if (height != 0) {
+                $(resourceRows[i]).height(height);
+            } else {
+                $(resourceRows[i]).height('auto');
+            }
         }
     }
 
@@ -422,7 +427,7 @@ function ResourceView(element, calendar, viewName) {
         element.find('table.fc-content-table').width(viewWidth);
 		setOuterWidth(headCells, colWidth);
 
-        headerTable.width(viewWidth + 101); // allow for dummy column
+        headerTable.width(viewWidth + 100); // allow for dummy column
         setOuterWidth(headerTableCells.slice(0, -1), colWidth); // set width of all header columns except last dummy column
         syncDivs();
 	}

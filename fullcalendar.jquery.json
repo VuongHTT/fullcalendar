@@ -1,6 +1,6 @@
 {
   "name": "fullcalendar-resourceviews-scrollable",
-  "version": "1.6.1.1-tbuckel",
+  "version": "1.6.1.1-scrollable",
   "dependencies": {
     "jquery": "~1.9.1"
   },
