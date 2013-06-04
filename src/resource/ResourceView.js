@@ -306,6 +306,7 @@ function ResourceView(element, calendar, viewName) {
 	function updateCells(firstTime) {
 		var month = t.start.getMonth();
 		var today = clearTime(new Date());
+        var now = new Date();
 		var cell;
 		var date;
 		var row;
@@ -346,8 +347,15 @@ function ResourceView(element, calendar, viewName) {
 				cell.addClass(tm + '-state-highlight fc-today');
 			}else{
 				cell.removeClass(tm + '-state-highlight fc-today');
+                if (date < now) {
+                    cell.addClass('fc-past');
+                    cell.removeClass('fc-future');
+                } else {
+                    cell.addClass('fc-future');
+                    cell.removeClass('fc-past');
+                }
 			}
-			
+
 			if (date.getDay() == 0 || date.getDay() == 6) cell.addClass('fc-weekend-column');
 			
 			cell.find('div.fc-day-number').text(date.getDate());
